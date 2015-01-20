@@ -3,10 +3,9 @@ package diaryruapi
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	_ "log"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 func Comment_get(sid, postid string) ([]*CommentStruct, error) {
@@ -20,7 +19,7 @@ func Comment_get(sid, postid string) ([]*CommentStruct, error) {
 		return nil, errors.New(resp.Status)
 	}
 	var message DiaryAPICommentGet
-	dec := json.NewDecoder(resp.Body)
+	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&message); err != nil {
 		return nil, err
 	}
@@ -50,7 +49,7 @@ func Comment_get_for_post(sid string, post *PostStruct) ([]*CommentStruct, error
 		return nil, errors.New(resp.Status)
 	}
 	var message DiaryAPICommentGet
-	dec := json.NewDecoder(resp.Body)
+	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&message); err != nil {
 		return nil, err
 	}

@@ -76,9 +76,9 @@ type DiaryAPIPostCreate struct {
 }
 
 type DiaryAPIJournalGet struct {
-	Result  int           `json:"result,string"`
-	Journal *JornalStruct `json:"journal"`
-	Error   string        `json:"error"`
+	Result  int            `json:"result,string"`
+	Journal *JournalStruct `json:"journal"`
+	Error   string         `json:"error"`
 }
 
 type JournalStruct struct {

@@ -6,6 +6,7 @@ import (
 	"github.com/yastrov/charmap"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 func makeDiaryRuPassword(password string) string {

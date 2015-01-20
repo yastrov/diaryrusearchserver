@@ -3,11 +3,9 @@ package diaryruapi
 import (
 	"encoding/json"
 	"errors"
-	"io"
-	"log"
+	_ "log"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 func Auth(user, password string) (string, error) {
@@ -41,7 +39,7 @@ func JournalGet(sid, userid, shortname string) (*JournalStruct, error) {
 	if userid != "" {
 		values.Add("userid", userid)
 	}
-	if shortname != nil {
+	if shortname != "" {
 		values.Add("shortname", shortname)
 	}
 	values.Add("method", "journal.get")
@@ -49,18 +47,18 @@ func JournalGet(sid, userid, shortname string) (*JournalStruct, error) {
 	resp, err := diaryGet(values)
 	defer resp.Body.Close()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.New(resp.Status)
+		return nil, errors.New(resp.Status)
 	}
 
-	dec := json.NewDecoder(resp.Body)
+	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&message); err != nil {
-		return "", err
+		return nil, err
 	}
 	if message.Result != 0 {
-		return "", errors.New(mess.Error)
+		return nil, errors.New(message.Error)
 	}
-	return message.Journal
+	return message.Journal, nil
 }

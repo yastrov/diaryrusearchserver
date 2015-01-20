@@ -1,3 +1,13 @@
+package diaryruapi
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/url"
+	"strconv"
+)
+
 /*
 diarytype
 "diary"
@@ -15,9 +25,9 @@ func Post_get(sid, shortname, diarytype, from, src string) ([]*PostStruct, error
 	if from != "" {
 		values.Add("from", from)
 	}
-    if src != "" {
-        values.Add("src", from)
-    }
+	if src != "" {
+		values.Add("src", from)
+	}
 	resp, err := diaryGet(values)
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -57,8 +67,8 @@ func Post_create(sid, title, message string) (string, error) {
 	}
 
 	var mess DiaryAPIPostCreate
-	dec := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&mes); err != nil {
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&message); err != nil {
 		return "", err
 	}
 	if mess.Result != 0 {
@@ -74,17 +84,17 @@ diarytype
 "quotes"
 */
 func PostsAllGet(sid, diarytype string, journal *JournalStruct) ([]*PostStruct, error) {
-    result := make([]*PostStruct, 0, journal.Posts)
-    var i uint64 = 0
-    for i < journal.Posts {
-        r, err := Post_get(sid, journal.Shortname, diarytype, strconv.FormatUint(i))
-        if err != 0 {
-            return result, err
-        }
-        i += len(r)
-        for _, post := range {
-            result := append(result, post)
-        }
-    }
-    return result, nil
+	result := make([]*PostStruct, 0, journal.Posts)
+	var i uint64 = 0
+	for i < journal.Posts {
+		r, err := Post_get(sid, journal.Shortname, diarytype, strconv.FormatUint(i, 10), "")
+		if err != nil {
+			return result, err
+		}
+		i += uint64(len(r))
+		for _, post := range r {
+			result = append(result, post)
+		}
+	}
+	return result, nil
 }
