@@ -3,9 +3,11 @@ package diaryruapi
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 )
 
 /*
@@ -15,6 +17,7 @@ diarytype
 "quotes"
 */
 func Post_get(sid, shortname, diarytype, from, src string) ([]*PostStruct, error) {
+	log.Println("Post_get")
 	values := url.Values{}
 	values.Add("sid", sid)
 	values.Add("type", diarytype)
@@ -26,7 +29,7 @@ func Post_get(sid, shortname, diarytype, from, src string) ([]*PostStruct, error
 		values.Add("from", from)
 	}
 	if src != "" {
-		values.Add("src", from)
+		values.Add("src", src)
 	}
 	resp, err := diaryGet(values)
 	defer resp.Body.Close()
@@ -49,6 +52,7 @@ func Post_get(sid, shortname, diarytype, from, src string) ([]*PostStruct, error
 }
 
 func Post_create(sid, title, message string) (string, error) {
+	log.Println("Post_create")
 	values := url.Values{}
 	values.Add("sid", sid)
 	values.Add("message", message)
@@ -97,4 +101,58 @@ func PostsAllGet(sid, diarytype string, journal *JournalStruct) ([]*PostStruct, 
 		}
 	}
 	return result, nil
+}
+
+// Channels version
+func Post_get_Channels(sid, shortname, diarytype, from, src string, post_chan chan *PostStruct, err_chan chan error) {
+	values := url.Values{}
+	values.Add("sid", sid)
+	values.Add("type", diarytype)
+	values.Add("method", "post.get")
+	if shortname != "" {
+		values.Add("shortname", shortname)
+	}
+	if from != "" {
+		values.Add("from", from)
+	}
+	if src != "" {
+		values.Add("src", from)
+	}
+	resp, err := diaryGet(values)
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		err_chan <- errors.New(resp.Status)
+		return
+	}
+	var message DiaryAPIPostGet
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&message); err != nil {
+		err_chan <- err
+		return
+	}
+	for _, post_unit := range message.Posts {
+		post_chan <- post_unit
+	}
+	if message.Result != 0 {
+		err_chan <- errors.New(message.Error)
+		return
+	}
+}
+
+func PostsAllGetChannels(sid, diarytype string, journal *JournalStruct, post_chan chan *PostStruct, err chan error, wg *sync.WaitGroup) {
+	log.Println("PostsAllGetChannels")
+	var i uint64 = 0
+	defer wg.Done()
+	for i < /*journal.Posts*/ 1 {
+		log.Println("Make sync Post_get: ", strconv.FormatUint(i, 10))
+		r, er := Post_get(sid, journal.Shortname, diarytype, strconv.FormatUint(i, 10), "")
+		if er != nil {
+			err <- er
+			return
+		}
+		for _, post := range r {
+			post_chan <- post
+		}
+		i += uint64(len(r))
+	}
 }

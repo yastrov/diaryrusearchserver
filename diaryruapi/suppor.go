@@ -1,5 +1,9 @@
 package diaryruapi
 
+import (
+	"bytes"
+)
+
 const (
 	appkey       = "" // ok also
 	key          = "" // pk also
@@ -22,7 +26,7 @@ type PostStruct struct {
 	Message_html        string            `json:"message_html"`
 	Author_userid       string            `json:"author_userid"`
 	Author_shortname    string            `json:"author_shortname"`
-	Author_username     string            `json:"author_shortname"`
+	Author_username     string            `json:"author_username"`
 	Author_title        string            `json:"author_title"`
 	Title               string            `json:"title"`
 	No_comments         string            `json:"no_comments"`         // Flag for no comments
@@ -38,6 +42,15 @@ type PostStruct struct {
 	Close_access_mode   string            `json:"close_access_mode"`
 	Dateline_date       string            `json:"dateline_date"`
 	Access              string            `json:"access"`
+}
+
+func (post *PostStruct) MakeUrl() string {
+	buffer := bytes.NewBufferString("http://")
+	buffer.WriteString(post.Author_shortname)
+	buffer.WriteString(".diary.ru/p")
+	buffer.WriteString(post.Postid)
+	buffer.WriteString(".htm")
+	return buffer.String()
 }
 
 type DiaryAPIPostGet struct {
@@ -68,6 +81,16 @@ type CommentStruct struct {
 	Dateline         string `json:"dateline"`
 }
 
+func (post *CommentStruct) MakeUrl() string {
+	buffer := bytes.NewBufferString("http://")
+	buffer.WriteString(post.Author_shortname)
+	buffer.WriteString(".diary.ru/p")
+	buffer.WriteString(post.Postid)
+	buffer.WriteString(".htm#")
+	buffer.WriteString(post.Commentid)
+	return buffer.String()
+}
+
 type DiaryAPIPostCreate struct {
 	Result  int    `json:"result,string"`
 	Error   string `json:"error,string"`
@@ -82,17 +105,17 @@ type DiaryAPIJournalGet struct {
 }
 
 type JournalStruct struct {
-	Userid        string            `json:"userid"`
-	Ctime         string            `json:"ctime"`
-	Shortname     string            `json:"shortname"`
-	Title         string            `json:"title"`
-	Count_pch     string            `json:"count_pch"`
-	Access        string            `json:"access"`
-	Tags          map[string]string `json:"tags"`
-	Posts         uint64            `json:"posts,string"`
-	Can_write     string            `json:"can_write"`
-	Count_members string            `json:"count_members"`
-	Last_post_id  string            `json:"last_post_id"`
-	Last_post     string            `last_post"`
-	Jtype         string            `json:"jtype"`
+	Userid    string `json:"userid"`
+	Ctime     string `json:"ctime"`
+	Shortname string `json:"shortname"`
+	Title     string `json:"title"`
+	Count_pch string `json:"count_pch"`
+	Access    string `json:"access"`
+	//Tags          map[string]string `json:"tags"`
+	Posts         uint64 `json:"posts,string"`
+	Can_write     string `json:"can_write"`
+	Count_members string `json:"count_members"`
+	Last_post_id  string `json:"last_post_id"`
+	Last_post     string `last_post"`
+	Jtype         string `json:"jtype"`
 }
