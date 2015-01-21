@@ -1,16 +1,46 @@
 <!DOCTYPE html>
 <head>
-<title>Authorize</title>
+<title>Search</title>
 <style>
 background: #808080
 </style>
 </head>
 <body>
-<form method="POST" action="/search">
-<label for="keyword">keyword:
+<form id="searchform" method="POST" action="/search">
+<label for="keyword">keyword for search:
                     <input name="keyword" type="text" value=""></label><br>
-                    <input name="sid" type="text" value="{{ . }}"></label><br>
+                    <input name="sid" type="text" value="{{ .SID }}"><br>
+<label for="shortname">Shortname or diary url:
+    <input name="shortname" type="text" value=""></label><br>
+    <label for="diarytype">Search in:
+    <select size="2" name="diarytype" form="searchform" form_id="shortname">
+    <option value="diary">diary</option>
+    <option value="favorites">favorites</option>
+    <option value="quotes">quotes</option>
+    <option value="umail">umail</option>
+    </select></label><br>
 <button id="submit">Submit</button>
 </form>
+
+{{if .Posts eq nil}}
+<table border="1">
+      <tr>
+	<th>ID</th>
+	<th>message</th>
+    <th>url</th>
+      </tr>
+      {{with .Posts}}
+      {{range .}}
+      {.repeated section Posts}
+      <tr>
+	<td>{{.Postid}}</td>
+	<td>{{.Message_html}}</td>
+	<td>{{call .MakeUrl}}</td>
+      </tr>
+      {.end}
+      {{end}}
+      {{end}}
+    </table>
+{{end}}
 </body>
 </html>
